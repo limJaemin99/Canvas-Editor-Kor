@@ -1478,33 +1478,37 @@ window.onload = function () {
     }
   }
 
-  // 예시 버튼 클릭 이벤트
-  const exampleDom = document.querySelector<HTMLDivElement>('.menu-item__example')!
-  exampleDom.onclick = function () {
-    console.log('example')
-    const confirmed = confirm('현재 문서 내용이 예시 데이터로 대체됩니다. 계속하시겠습니까?')
-    if (confirmed) {
-      instance.command.executeSetValue(exampleData)
-      alert('예시 데이터를 불러왔습니다.')
+  // 예시 버튼 클릭 이벤트 (HTML에서 제거되었으나 코드 보존)
+  const exampleDom = document.querySelector<HTMLDivElement>('.menu-item__example')
+  if (exampleDom) {
+    exampleDom.onclick = function () {
+      console.log('example')
+      const confirmed = confirm('현재 문서 내용이 예시 데이터로 대체됩니다. 계속하시겠습니까?')
+      if (confirmed) {
+        instance.command.executeSetValue(exampleData)
+        alert('예시 데이터를 불러왔습니다.')
+      }
     }
   }
 
   // 초기화 버튼 클릭 이벤트
-  const resetDom = document.querySelector<HTMLDivElement>('.menu-item__reset')!
-  resetDom.onclick = function () {
-    console.log('reset')
-    const confirmed = confirm('문서를 초기화하시겠습니까? 모든 내용이 삭제됩니다.')
-    if (confirmed) {
-      instance.command.executeSetValue({
-        header: [],
-        main: [
-          {
-            value: '\n'
-          }
-        ],
-        footer: []
-      })
-      alert('문서가 초기화되었습니다.')
+  const resetDom = document.querySelector<HTMLDivElement>('.menu-item__reset')
+  if (resetDom) {
+    resetDom.onclick = function () {
+      console.log('reset')
+      const confirmed = confirm('문서를 초기화하시겠습니까? 모든 내용이 삭제됩니다.')
+      if (confirmed) {
+        instance.command.executeSetValue({
+          header: [],
+          main: [
+            {
+              value: '\n'
+            }
+          ],
+          footer: []
+        })
+        alert('문서가 초기화되었습니다.')
+      }
     }
   }
 
@@ -2365,6 +2369,11 @@ window.onload = function () {
         main: (main as IElement[]).length ? (main as IElement[]) : [{ value: '\n' }],
         footer: footer as IElement[]
       })
+
+      // 렌더링 완료 후 목차 강제 갱신 (positionList 계산 완료 대기)
+      if (isCatalogShow) {
+        setTimeout(() => { updateCatalog() }, 300)
+      }
     }
 
     if (type === 'GET_EDITOR_DATA') {

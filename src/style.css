@@ -907,88 +907,13 @@ ul {
   font-weight: 600;
 }
 
-/* 예시 버튼 스타일 */
-.menu-item__example {
-  width: auto !important;
-  padding: 0 16px !important;
-  height: 32px !important;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
-  color: white;
-  font-size: 14px;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(245, 87, 108, 0.4);
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  margin-left: 8px !important;
-}
-
-.menu-item__example:hover {
-  background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%) !important;
-  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.6);
-  transform: translateY(-1px);
-}
-
-.menu-item__example:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(245, 87, 108, 0.4);
-}
-
-.menu-item__example i {
-  display: none;
-}
-
-.menu-item__example span {
-  white-space: nowrap;
-  font-weight: 600;
-}
-
 /* 초기화 버튼 스타일 */
-.menu-item__reset {
-  width: auto !important;
-  padding: 0 16px !important;
-  height: 32px !important;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
-  color: white;
-  font-size: 14px;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(250, 112, 154, 0.4);
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  margin-left: 8px !important;
+.menu-item__reset i {
+  background-image: url('./assets/images/trash.svg');
 }
 
 .menu-item__reset:hover {
-  background: linear-gradient(135deg, #fee140 0%, #fa709a 100%) !important;
-  box-shadow: 0 4px 12px rgba(250, 112, 154, 0.6);
-  transform: translateY(-1px);
-}
-
-.menu-item__reset:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(250, 112, 154, 0.4);
-}
-
-.menu-item__reset i {
-  display: none;
-}
-
-.menu-item__reset span {
-  white-space: nowrap;
-  font-weight: 600;
+  background: rgba(25, 55, 88, .04);
 }
 
 .catalog {
