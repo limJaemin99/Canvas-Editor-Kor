@@ -1,0 +1,118 @@
+// 간단한 markdown을 IElement로 변환하는 플러그인 예제, 코드는 참고용입니다
+import Editor, {
+  Command,
+  ElementType,
+  IElement,
+  ListType,
+  TitleLevel
+} from '../../editor'
+
+export type CommandWithMarkdown = Command & {
+  executeInsertMarkdown(markdown: string): void
+}
+
+export const titleNodeNameMapping: Record<string, TitleLevel> = {
+  '1': TitleLevel.TITLE,
+  '2': TitleLevel.PYEON,
+  '3': TitleLevel.JANG,
+  '4': TitleLevel.JEOL,
+  '5': TitleLevel.GWAN,
+  '6': TitleLevel.JO
+}
+
+function convertMarkdownToElement(markdown: string): IElement[] {
+  const elementList: IElement[] = []
+  const lines = markdown.trim().split('\n')
+  for (let l = 0; l < lines.length; l++) {
+    const line = lines[l]
+    if (line.startsWith('#')) {
+      const level = line.indexOf(' ')
+      elementList.push({
+        type: ElementType.TITLE,
+        level: titleNodeNameMapping[level],
+        value: '',
+        valueList: [
+          {
+            value: line.slice(level + 1)
+          }
+        ]
+      })
+    } else if (line.startsWith('- ')) {
+      elementList.push({
+        type: ElementType.LIST,
+        listType: ListType.UL,
+        value: '',
+        valueList: [
+          {
+            value: line.slice(2)
+          }
+        ]
+      })
+    } else if (/^\d+\.\s/.test(line)) {
+      elementList.push({
+        type: ElementType.LIST,
+        listType: ListType.OL,
+        value: '',
+        valueList: [
+          {
+            value: line.replace(/^\d+\.\s/, '')
+          }
+        ]
+      })
+    } else if (/^\[.*?\]\(.*?\)$/.test(line)) {
+      const match = line.match(/^\[(.*?)\]\((.*?)\)$/)
+      elementList.push({
+        type: ElementType.HYPERLINK,
+        value: '',
+        valueList: [
+          {
+            value: match![1]
+          }
+        ],
+        url: match![2]
+      })
+    } else if (/^\*\*(.*?)\*\*$/.test(line)) {
+      const match = line.match(/^\*\*(.*?)\*\*$/)
+      elementList.push({
+        type: ElementType.TEXT,
+        value: match![1],
+        bold: true
+      })
+    } else if (/^\*(.*?)\*$/.test(line)) {
+      const match = line.match(/^\*(.*?)\*$/)
+      elementList.push({
+        type: ElementType.TEXT,
+        value: match![1],
+        italic: true
+      })
+    } else if (/^__(.*?)__$/.test(line)) {
+      const match = line.match(/^__(.*?)__$/)
+      elementList.push({
+        type: ElementType.TEXT,
+        value: match![1],
+        underline: true
+      })
+    } else if (/^~~(.*?)~~$/.test(line)) {
+      const match = line.match(/^~~(.*?)~~$/)
+      elementList.push({
+        type: ElementType.TEXT,
+        value: match![1],
+        strikeout: true
+      })
+    } else {
+      elementList.push({
+        type: ElementType.TEXT,
+        value: line
+      })
+    }
+  }
+  return elementList
+}
+
+export function markdownPlugin(editor: Editor) {
+  const command = <CommandWithMarkdown>editor.command
+  command.executeInsertMarkdown = (markdown: string) => {
+    const elementList = convertMarkdownToElement(markdown)
+    command.executeInsertElementList(elementList)
+  }
+}

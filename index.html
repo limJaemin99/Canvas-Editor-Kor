@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>canvas-editor</title>
+</head>
+
+<body>
+  <div id="app">
+    <div class="menu" editor-component="menu">
+      <div class="menu-item">
+        <div class="menu-item__undo">
+          <i></i>
+        </div>
+        <div class="menu-item__redo">
+          <i></i>
+        </div>
+        <div class="menu-item__painter" title="서식 복사(더블클릭으로 연속 사용)">
+          <i></i>
+        </div>
+        <div class="menu-item__format" title="서식 지우기">
+          <i></i>
+        </div>
+      </div>
+      <div class="menu-divider"></div>
+      <div class="menu-item">
+        <div class="menu-item__font">
+          <span class="select" title="글꼴">맑은 고딕</span>
+          <div class="options">
+            <ul>
+              <li data-family="Malgun Gothic" style="font-family:'Malgun Gothic';">맑은 고딕</li>
+              <li data-family="Microsoft YaHei" style="font-family:'Microsoft YaHei';">Microsoft YaHei</li>
+              <li data-family="Batang" style="font-family:'Batang';">바탕</li>
+              <li data-family="Dotum" style="font-family:'Dotum';">돋움</li>
+              <li data-family="Gulim" style="font-family:'Gulim';">굴림</li>
+              <li data-family="Gungsuh" style="font-family:'Gungsuh';">궁서</li>
+              <li data-family="Arial" style="font-family:'Arial';">Arial</li>
+              <li data-family="Segoe UI" style="font-family:'Segoe UI';">Segoe UI</li>
+              <li data-family="Ink Free" style="font-family:'Ink Free';">Ink Free</li>
+              <li data-family="Fantasy" style="font-family:'Fantasy';">Fantasy</li>
+            </ul>
+          </div>
+        </div>
+        <div class="menu-item__size">
+          <span class="select" title="글꼴 크기">14</span>
+          <div class="options">
+            <ul>
+              <li data-size="56">56</li>
+              <li data-size="48">48</li>
+              <li data-size="34">34</li>
+              <li data-size="32">32</li>
+              <li data-size="29">29</li>
+              <li data-size="24">24</li>
+              <li data-size="21">21</li>
+              <li data-size="20">20</li>
+              <li data-size="18">18</li>
+              <li data-size="16">16</li>
+              <li data-size="14">14</li>
+              <li data-size="12">12</li>
+              <li data-size="10">10</li>
+              <li data-size="8">8</li>
+              <li data-size="7">7</li>
+              <li data-size="6">6</li>
+            </ul>
+          </div>
+        </div>
+        <div class="menu-item__size-add">
+          <i></i>
+        </div>
+        <div class="menu-item__size-minus">
+          <i></i>
+        </div>
+        <div class="menu-item__bold">
+          <i></i>
+        </div>
+        <div class="menu-item__italic">
+          <i></i>
+        </div>
+        <div class="menu-item__underline">
+          <i></i>
+          <span class="select"></span>
+          <div class="options">
+            <ul>
+              <li data-decoration-style='solid'>
+                <i></i>
+              </li>
+              <li data-decoration-style='double'>
+                <i></i>
+              </li>
+              <li data-decoration-style='dashed'>
+                <i></i>
+              </li>
+              <li data-decoration-style='dotted'>
+                <i></i>
+              </li>
+              <li data-decoration-style='wavy'>
+                <i></i>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="menu-item__strikeout" title="취소선(Ctrl+Shift+X)">
+          <i></i>
+        </div>
+        <div class="menu-item__superscript">
+          <i></i>
+        </div>
+        <div class="menu-item__subscript">
+          <i></i>
+        </div>
+        <div class="menu-item__color" title="글꼴 색">
+          <i></i>
+          <span></span>
+          <div class="color-palette">
+            <div class="color-palette__recent" id="color-recent">
+              <div class="color-palette__section-label">최근 사용 색상</div>
+              <div class="color-palette__recent-items" id="color-recent-items"></div>
+            </div>
+            <div class="color-palette__row">
+              <div class="color-item" data-color="#000000" style="background:#000000"></div>
+              <div class="color-item" data-color="#333333" style="background:#333333"></div>
+              <div class="color-item" data-color="#666666" style="background:#666666"></div>
+              <div class="color-item" data-color="#999999" style="background:#999999"></div>
+              <div class="color-item" data-color="#CCCCCC" style="background:#CCCCCC"></div>
+              <div class="color-item" data-color="#FFFFFF" style="background:#FFFFFF;border:1px solid #ddd"></div>
+              <div class="color-item" data-color="#FF0000" style="background:#FF0000"></div>
+              <div class="color-item" data-color="#FF9900" style="background:#FF9900"></div>
+              <div class="color-item" data-color="#FFFF00" style="background:#FFFF00"></div>
+              <div class="color-item" data-color="#00FF00" style="background:#00FF00"></div>
+            </div>
+            <div class="color-palette__row">
+              <div class="color-item" data-color="#00FFFF" style="background:#00FFFF"></div>
+              <div class="color-item" data-color="#0000FF" style="background:#0000FF"></div>
+              <div class="color-item" data-color="#9900FF" style="background:#9900FF"></div>
+              <div class="color-item" data-color="#FF00FF" style="background:#FF00FF"></div>
+              <div class="color-item" data-color="#800000" style="background:#800000"></div>
+              <div class="color-item" data-color="#804000" style="background:#804000"></div>
+              <div class="color-item" data-color="#808000" style="background:#808000"></div>
+              <div class="color-item" data-color="#008000" style="background:#008000"></div>
+              <div class="color-item" data-color="#008080" style="background:#008080"></div>
+              <div class="color-item" data-color="#000080" style="background:#000080"></div>
+            </div>
+            <div class="color-palette__custom">
+              <button class="color-rgb-toggle" id="color-rgb-toggle">▼ 직접 입력 (RGB)</button>
+            </div>
+            <div class="color-rgb-panel" id="color-rgb-panel" style="display:none;">
+              <input type="color" id="color-rgb-input" value="#000000" />
+              <div class="color-rgb-preview" id="color-rgb-preview" style="background:#000000;"></div>
+              <button class="color-rgb-apply" id="color-rgb-apply">적용</button>
+            </div>
+          </div>
+        </div>
+        <div class="menu-item__highlight" title="강조 색">
+          <i></i>
+          <span></span>
+          <div class="color-palette">
+            <div class="color-palette__recent" id="highlight-recent">
+              <div class="color-palette__section-label">최근 사용 색상</div>
+              <div class="color-palette__recent-items" id="highlight-recent-items"></div>
+            </div>
+            <div class="color-palette__row">
+              <div class="color-item" data-color="#FFFF00" style="background:#FFFF00"></div>
+              <div class="color-item" data-color="#00FF00" style="background:#00FF00"></div>
+              <div class="color-item" data-color="#00FFFF" style="background:#00FFFF"></div>
+              <div class="color-item" data-color="#FF00FF" style="background:#FF00FF"></div>
+              <div class="color-item" data-color="#0000FF" style="background:#0000FF"></div>
+              <div class="color-item" data-color="#FF0000" style="background:#FF0000"></div>
+              <div class="color-item" data-color="#800080" style="background:#800080"></div>
+              <div class="color-item" data-color="#808000" style="background:#808000"></div>
+              <div class="color-item" data-color="#008080" style="background:#008080"></div>
+              <div class="color-item" data-color="#FFD700" style="background:#FFD700"></div>
+            </div>
+            <div class="color-palette__row">
+              <div class="color-item" data-color="#FFA500" style="background:#FFA500"></div>
+              <div class="color-item" data-color="#90EE90" style="background:#90EE90"></div>
+              <div class="color-item" data-color="#87CEEB" style="background:#87CEEB"></div>
+              <div class="color-item" data-color="#FFB6C1" style="background:#FFB6C1"></div>
+              <div class="color-item" data-color="#DDA0DD" style="background:#DDA0DD"></div>
+              <div class="color-item" data-color="#F0E68C" style="background:#F0E68C"></div>
+              <div class="color-item" data-color="#E0FFFF" style="background:#E0FFFF"></div>
+              <div class="color-item" data-color="#FFDAB9" style="background:#FFDAB9"></div>
+              <div class="color-item" data-color="#D3D3D3" style="background:#D3D3D3"></div>
+              <div class="color-item" data-color="transparent" style="background:#FFFFFF;border:1px solid #ddd">없음</div>
+            </div>
+            <div class="color-palette__custom">
+              <button class="color-rgb-toggle" id="highlight-rgb-toggle">▼ 직접 입력 (RGB)</button>
+            </div>
+            <div class="color-rgb-panel" id="highlight-rgb-panel" style="display:none;">
+              <input type="color" id="highlight-rgb-input" value="#ffff00" />
+              <div class="color-rgb-preview" id="highlight-rgb-preview" style="background:#ffff00;"></div>
+              <button class="color-rgb-apply" id="highlight-rgb-apply">적용</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="menu-divider"></div>
+      <div class="menu-item">
+        <div class="menu-item__title">
+          <i></i>
+          <span class="select" title="제목 전환">본문</span>
+          <div class="options">
+            <ul>
+              <li data-level="title" style="font-size:26px;">제목</li>
+              <li data-level="pyeon" style="font-size:24px;">편</li>
+              <li data-level="jang" style="font-size:22px;">장</li>
+              <li data-level="jeol" style="font-size:20px;">절</li>
+              <li data-level="gwan" style="font-size:18px;">관</li>
+              <li data-level="jo" style="font-size:16px;">조</li>
+              <li style="font-size:16px;">본문</li>
+              <li data-level="buchik" style="font-size:22px;">부칙</li>
+              <li data-level="byeolji" style="font-size:16px;">별지/별표</li>
+            </ul>
+          </div>
+        </div>
+        <div class="menu-item__left">
+          <i></i>
+        </div>
+        <div class="menu-item__center">
+          <i></i>
+        </div>
+        <div class="menu-item__right">
+          <i></i>
+        </div>
+        <div class="menu-item__alignment">
+          <i></i>
+        </div>
+        <div class="menu-item__justify">
+          <i></i>
+        </div>
+        <div class="menu-item__indent-increase" title="들여쓰기 증가(Tab)">
+          <i></i>
+        </div>
+        <div class="menu-item__indent-decrease" title="들여쓰기 감소(Shift+Tab)">
+          <i></i>
+        </div>
+        <div class="menu-item__row-margin">
+          <i title="줄 간격"></i>
+          <div class="options">
+            <ul>
+              <li data-rowmargin='1'>1</li>
+              <li data-rowmargin="1.25">1.25</li>
+              <li data-rowmargin="1.5">1.5</li>
+              <li data-rowmargin="1.75">1.75</li>
+              <li data-rowmargin="2">2</li>
+              <li data-rowmargin="2.5">2.5</li>
+              <li data-rowmargin="3">3</li>
+            </ul>
+          </div>
+        </div>
+        <div class="menu-item__list">
+          <i></i>
+          <div class="options">
+            <ul>
+              <li>
+                <label>목록 취소</label>
+              </li>
+              <li data-list-type="ol" data-list-style='decimal'>
+                <label>순서 목록：</label>
+                <ol>
+                  <li>________</li>
+                </ol>
+              </li>
+              <li data-list-type="ul" data-list-style='checkbox'>
+                <label>체크박스 목록：</label>
+                <ul style="list-style-type: '☑️ ';">
+                  <li>________</li>
+                </ul>
+              </li>
+              <li data-list-type="ul" data-list-style='disc'>
+                <label>채운 원 목록：</label>
+                <ul style="list-style-type: disc;">
+                  <li>________</li>
+                </ul>
+              </li>
+              <li data-list-type="ul" data-list-style='circle'>
+                <label>빈 원 목록：</label>
+                <ul style="list-style-type: circle;">
+                  <li>________</li>
+                </ul>
+              </li>
+              <li data-list-type="ul" data-list-style='square'>
+                <label>빈 사각형 목록：</label>
+                <ul style="list-style-type: '☐ ';">
+                  <li>________</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="menu-divider"></div>
+      <div class="menu-item">
+        <div class="menu-item__table">
+          <i title="표"></i>
+        </div>
+        <div class="menu-item__table__collapse">
+          <div class="table-close">×</div>
+          <div class="table-title">
+            <span class="table-select">삽입</span>
+            <span>표</span>
+          </div>
+          <div class="table-panel"></div>
+        </div>
+        <div class="menu-item__image">
+          <i title="그림"></i>
+          <input type="file" id="image" accept=".png, .jpg, .jpeg, .svg, .gif">
+        </div>
+        <div class="menu-item__hyperlink">
+          <i title="하이퍼링크"></i>
+        </div>
+        <div class="menu-item__separator">
+          <i title="구분선"></i>
+          <div class="options">
+            <ul>
+              <li data-separator='0,0'>
+                <i></i>
+              </li>
+              <li data-separator="1,1">
+                <i></i>
+              </li>
+              <li data-separator="3,1">
+                <i></i>
+              </li>
+              <li data-separator="4,4">
+                <i></i>
+              </li>
+              <li data-separator="7,3,3,3">
+                <i></i>
+              </li>
+              <li data-separator="6,2,2,2,2,2">
+                <i></i>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="menu-item__watermark">
+          <i title="워터마크(추가, 삭제)"></i>
+          <div class="options">
+            <ul>
+              <li data-menu="add">워터마크 추가</li>
+              <li data-menu="delete">워터마크 삭제</li>
+            </ul>
+          </div>
+        </div>
+        <div class="menu-item__codeblock" title="코드 블록">
+          <i></i>
+        </div>
+        <div class="menu-item__page-break" title="페이지 나누기">
+          <i></i>
+        </div>
+        <div class="menu-item__control">
+          <i title="컨트롤"></i>
+          <div class="options">
+            <ul>
+              <li data-control='text'>텍스트</li>
+              <li data-control="number">숫자</li>
+              <li data-control="select">목록</li>
+              <li data-control="date">날짜</li>
+              <li data-control="checkbox">체크박스</li>
+              <li data-control="radio">라디오버튼</li>
+            </ul>
+          </div>
+        </div>
+        <div class="menu-item__checkbox" title="체크박스">
+          <i></i>
+        </div>
+        <div class="menu-item__radio" title="라디오버튼">
+          <i></i>
+        </div>
+        <div class="menu-item__latex" title="LateX">
+          <i></i>
+        </div>
+        <div class="menu-item__date">
+          <i title="날짜"></i>
+          <div class="options">
+            <ul>
+              <li data-format="yyyy-MM-dd"></li>
+              <li data-format="yyyy-MM-dd hh:mm:ss"></li>
+            </ul>
+          </div>
+        </div>
+        <div class="menu-item__block" title="콘텐츠 블록">
+          <i></i>
+        </div>
+      </div>
+      <div class="menu-divider"></div>
+      <div class="menu-item">
+        <div class="menu-item__search" data-menu="search">
+          <i></i>
+        </div>
+        <div class="menu-item__search__collapse" data-menu="search">
+          <div class="menu-item__search__collapse__search">
+            <input type="text" />
+            <label class="search-result"></label>
+            <div class="arrow-left">
+              <i></i>
+            </div>
+            <div class="arrow-right">
+              <i></i>
+            </div>
+            <span>×</span>
+          </div>
+          <div class="menu-item__search__collapse__replace">
+            <input type="text">
+            <button>바꾸기</button>
+          </div>
+          <div class="menu-item__search__collapse__option">
+            <div class="search-option-item">
+              <input type="checkbox" id="option-reg" checked />
+              <label for="option-reg">정규식</label>
+            </div>
+            <div class="search-option-item">
+              <input type="checkbox" id="option-case" checked />
+              <label for="option-case">대소문자무시</label>
+            </div>
+            <div class="search-option-item">
+              <input type="checkbox" id="option-selection" />
+              <label for="option-selection">선택영역내검색</label>
+            </div>
+          </div>
+        </div>
+        <div class="menu-item__print" data-menu="print">
+          <i></i>
+        </div>
+        <div class="menu-item__export-json" data-menu="export-json" title="저장">
+          <span>저장</span>
+        </div>
+        <div class="menu-item__example" data-menu="example" title="예시 데이터 불러오기">
+          <span>예시</span>
+        </div>
+        <div class="menu-item__reset" data-menu="reset" title="문서 초기화">
+          <span>초기화</span>
+        </div>
+      </div>
+    </div>
+    <div class="catalog" editor-component="catalog">
+      <div class="catalog__header">
+        <span>목차</span>
+        <div class="catalog__header__close">
+          <i></i>
+        </div>
+      </div>
+      <div class="catalog__main"></div>
+    </div>
+    <div class="editor"></div>
+    <div class="comment" editor-component="comment"></div>
+    <div class="footer" editor-component="footer">
+      <div>
+        <div class="catalog-mode" title="목차">
+          <i></i>
+        </div>
+        <div class="page-mode">
+          <i title="페이지 모드(분할, 연속)"></i>
+          <div class="options">
+            <ul>
+              <li data-page-mode="paging" class="active">분할</li>
+              <li data-page-mode="continuity">연속</li>
+            </ul>
+          </div>
+        </div>
+        <span>보이는 페이지：<span class="page-no-list">1</span></span>
+        <span>페이지：<span class="page-no">1</span>/<span class="page-size">1</span></span>
+        <span>문자 수：<span class="word-count">0</span></span>
+        <span>줄：<span class="row-no">0</span></span>
+        <span>열：<span class="col-no">0</span></span>
+      </div>
+      <div class="editor-mode" title="편집 모드(편집, 청결, 읽기전용, 양식, 설계, 주석)">편집 모드</div>
+      <div>
+        <div class="page-scale-minus" title="축소(Ctrl+-)">
+          <i></i>
+        </div>
+        <span class="page-scale-percentage" title="표시 비율(클릭으로 복원 Ctrl+0)">100%</span>
+        <div class="page-scale-add" title="확대(Ctrl+=)">
+          <i></i>
+        </div>
+        <div class="paper-size">
+          <i title="용지 종류"></i>
+          <div class="options">
+            <ul>
+              <li data-paper-size="794*1123" class="active">A4</li>
+              <li data-paper-size="1593*2251">A2</li>
+              <li data-paper-size="1125*1593">A3</li>
+              <li data-paper-size="565*796">A5</li>
+              <li data-paper-size="412*488">5호 봉투</li>
+              <li data-paper-size="450*866">6호 봉투</li>
+              <li data-paper-size="609*862">7호 봉투</li>
+              <li data-paper-size="862*1221">9호 봉투</li>
+              <li data-paper-size="813*1266">법률 용지</li>
+              <li data-paper-size="813*1054">편지지</li>
+            </ul>
+          </div>
+        </div>
+        <div class="paper-direction">
+          <i title="용지 방향"></i>
+          <div class="options">
+            <ul>
+              <li data-paper-direction="vertical" class="active">세로</li>
+              <li data-paper-direction="horizontal">가로</li>
+            </ul>
+          </div>
+        </div>
+        <div class="paper-margin" title="여백">
+          <i></i>
+        </div>
+        <div class="fullscreen" title="전체 화면">
+          <i></i>
+        </div>
+        <div class="editor-option" title="편집기 설정">
+          <i></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
