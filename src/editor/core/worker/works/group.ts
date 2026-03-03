@@ -27,6 +27,8 @@ function getGroupIds(elementList: IElement[]): string[] {
   return groupIds
 }
 
+export { getGroupIds }
+
 onmessage = evt => {
   const elementList = <IElement[]>evt.data
   const groupIds = getGroupIds(elementList)

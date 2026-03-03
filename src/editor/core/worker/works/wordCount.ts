@@ -118,6 +118,14 @@ function groupText(text: string): string[] {
   return characterList
 }
 
+export function runWordCount(elementList: IElement[]): number {
+  const originText = pickText(elementList)
+  const filterText = originText
+    .replace(new RegExp(`^${ZERO}`), '')
+    .replace(new RegExp(ZERO, 'g'), WRAP)
+  return groupText(filterText).length
+}
+
 onmessage = evt => {
   const elementList = <IElement[]>evt.data
   // 提取文本

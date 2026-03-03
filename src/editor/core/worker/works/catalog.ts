@@ -211,6 +211,8 @@ function getCatalog(payload: IGetCatalogPayload): ICatalog | null {
   return catalog
 }
 
+export { getCatalog }
+
 onmessage = evt => {
   const payload = <IGetCatalogPayload>evt.data
   const catalog = getCatalog(payload)

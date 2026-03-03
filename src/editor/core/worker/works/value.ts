@@ -7,6 +7,16 @@ interface IGetValueWorkerOption {
   options: IGetValueOption
 }
 
+export function runValue(payload: IGetValueWorkerOption): IEditorData {
+  const { options, data } = payload
+  const { extraPickAttrs = [] } = options || {}
+  return {
+    header: zipElementList(data.header, { extraPickAttrs, isClone: false }),
+    main: zipElementList(data.main, { extraPickAttrs, isClassifyArea: true, isClone: false }),
+    footer: zipElementList(data.footer, { extraPickAttrs, isClone: false })
+  }
+}
+
 onmessage = evt => {
   const payload = <IGetValueWorkerOption>evt.data
   const { options, data } = payload
