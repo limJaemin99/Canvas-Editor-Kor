@@ -40,11 +40,7 @@ enum TitleLevel {
   JEOL = 'jeol',
   GWAN = 'gwan',
   JO = 'jo',
-  BYEOLJI = 'byeolji',
-  HANG = 'hang',
-  HO = 'ho',
-  MOK = 'mok',
-  DAN = 'dan'
+  BYEOLJI = 'byeolji'
 }
 
 const titleOrderNumberMapping: Record<TitleLevel, number> = {
@@ -55,11 +51,7 @@ const titleOrderNumberMapping: Record<TitleLevel, number> = {
   [TitleLevel.JEOL]: 5,
   [TitleLevel.GWAN]: 6,
   [TitleLevel.JO]: 7,
-  [TitleLevel.BYEOLJI]: 2,  // 별지/별표: 편과 동일한 2depth
-  [TitleLevel.HANG]: 8,
-  [TitleLevel.HO]: 9,
-  [TitleLevel.MOK]: 10,
-  [TitleLevel.DAN]: 11
+  [TitleLevel.BYEOLJI]: 2  // 별지/별표: 편과 동일한 2depth
 }
 
 const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
@@ -80,19 +72,15 @@ function isTextLikeElement(element: IElement): boolean {
 
 function getCatalog(payload: IGetCatalogPayload): ICatalog | null {
   const { elementList, positionList } = payload
-  // 목차에 표시되지 않아야 하는 레벨 정의
-  const excludeFromCatalog = [
-    TitleLevel.HANG,
-    TitleLevel.HO,
-    TitleLevel.MOK,
-    TitleLevel.DAN
-  ]
 
   // 筛选标题
   const titleElementList: ICatalogElement[] = []
   let t = 0
   while (t < elementList.length) {
     const element = elementList[t]
+    // positionList[t]가 없을 경우 안전하게 처리
+    const pageNo = positionList[t]?.pageNo ?? 0
+
     const getElementInfo = (
       element: IElement,
       elementList: IElement[],
@@ -105,7 +93,7 @@ function getCatalog(payload: IGetCatalogPayload): ICatalog | null {
         value: '',
         level,
         titleId,
-        pageNo: positionList[t].pageNo
+        pageNo
       }
       const valueList: IElement[] = []
       while (position < elementList.length) {
@@ -124,14 +112,32 @@ function getCatalog(payload: IGetCatalogPayload): ICatalog | null {
         .replace(new RegExp(ZERO, 'g'), '')
       return { position, titleElement }
     }
+
+    // 케이스 1: flatten된 요소 (titleId가 있는 일반 텍스트 요소)
     if (element.titleId) {
       const { position, titleElement } = getElementInfo(element, elementList, t)
       t = position
-      // 항/호/목/단은 목차에서 제외
-      if (!excludeFromCatalog.includes(titleElement.level as TitleLevel)) {
-        titleElementList.push(titleElement)
-      }
+      titleElementList.push(titleElement)
     }
+    // 케이스 2: type=title 구조 (valueList를 가진 중첩 요소 - flatten 전 구조가 남아있는 경우)
+    else if (element.type === ElementType.TITLE && element.level) {
+      const level = element.level as TitleLevel
+      // valueList에서 텍스트 추출
+      const name = (element.valueList || [])
+        .filter(el => isTextLikeElement(el))
+        .map(el => el.value)
+        .join('')
+        .replace(new RegExp(ZERO, 'g'), '')
+      const titleId = element.titleId || `catalog_${t}`
+      titleElementList.push({
+        type: ElementType.TITLE,
+        value: name,
+        level,
+        titleId,
+        pageNo
+      } as ICatalogElement)
+    }
+
     if (element.type === ElementType.TABLE) {
       const trList = element.trList!
       for (let r = 0; r < trList.length; r++) {
@@ -148,10 +154,7 @@ function getCatalog(payload: IGetCatalogPayload): ICatalog | null {
                   value,
                   index
                 )
-                // 항/호/목/단은 목차에서 제외
-                if (!excludeFromCatalog.includes(titleElement.level as TitleLevel)) {
-                  titleElementList.push(titleElement)
-                }
+                titleElementList.push(titleElement)
                 index = position
               }
               index++

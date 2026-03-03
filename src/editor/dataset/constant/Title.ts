@@ -24,11 +24,7 @@ export const titleSizeMapping: Record<TitleLevel, keyof ITitleSizeOption> = {
   [TitleLevel.JEOL]: 'defaultJeolSize',
   [TitleLevel.GWAN]: 'defaultGwanSize',
   [TitleLevel.JO]: 'defaultJoSize',
-  [TitleLevel.BYEOLJI]: 'defaultByeoljiSize',
-  [TitleLevel.HANG]: 'defaultHangSize',
-  [TitleLevel.HO]: 'defaultHoSize',
-  [TitleLevel.MOK]: 'defaultMokSize',
-  [TitleLevel.DAN]: 'defaultDanSize'
+  [TitleLevel.BYEOLJI]: 'defaultByeoljiSize'
 }
 
 export const titleOrderNumberMapping: Record<TitleLevel, number> = {
@@ -40,10 +36,6 @@ export const titleOrderNumberMapping: Record<TitleLevel, number> = {
   [TitleLevel.GWAN]: 6,
   [TitleLevel.JO]: 7,
   [TitleLevel.BYEOLJI]: 2,  // 별지/별표: 편과 동일한 2depth (제목 아래)
-  [TitleLevel.HANG]: 8,
-  [TitleLevel.HO]: 9,
-  [TitleLevel.MOK]: 10,
-  [TitleLevel.DAN]: 11
 }
 
 export const titleNodeNameMapping: Record<string, TitleLevel> = {

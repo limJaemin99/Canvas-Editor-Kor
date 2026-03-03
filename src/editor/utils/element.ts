@@ -125,11 +125,7 @@ export function formatElementList(
             // 크기를 강제하지 않는 레벨 (조/별지/항/호/목/단): size 덮어쓰기 금지
             const noSizeOverrideLevels: TitleLevel[] = [
               TitleLevel.JO,
-              TitleLevel.BYEOLJI,
-              TitleLevel.HANG,
-              TitleLevel.HO,
-              TitleLevel.MOK,
-              TitleLevel.DAN
+              TitleLevel.BYEOLJI
             ]
             const isNoSizeOverride = value.level && noSizeOverrideLevels.includes(value.level)
             if (!value.size && !isNoSizeOverride) {

@@ -6,9 +6,5 @@ export enum TitleLevel {
   JEOL = 'jeol',        // 절
   GWAN = 'gwan',        // 관
   JO = 'jo',            // 조
-  BYEOLJI = 'byeolji',  // 별지/별표 (굵게만, 크기 유지)
-  HANG = 'hang',        // 항
-  HO = 'ho',            // 호
-  MOK = 'mok',          // 목
-  DAN = 'dan'           // 단
+  BYEOLJI = 'byeolji'  // 별지/별표 (굵게만, 크기 유지)
 }
