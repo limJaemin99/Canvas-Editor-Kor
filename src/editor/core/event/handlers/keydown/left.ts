@@ -33,25 +33,38 @@ export function left(evt: KeyboardEvent, host: CanvasEvent) {
     })
     return
   }
-  // 단어 단위 이동 (Ctrl+←): 한국어 포함 공백·줄바꿈 경계 기준
+  // 단어 단위 이동 (Ctrl+←): ZERO·공백·문자 종류 전환 경계 기준
   let moveCount = 1
   if (isMod(evt)) {
-    const WORD_BOUNDARY_REG = /[\s\n\r]/
+    const ZERO = '\u200B'
     const moveStartIndex =
       evt.shiftKey && !isCollapsed && startIndex === cursorPosition?.index
         ? endIndex
         : startIndex
-    // 현재 위치에서 왼쪽으로 공백/줄바꿈 경계까지 이동
-    let i = moveStartIndex - 1
-    // 현재 위치가 공백이면 공백부터 건너뜀
-    while (i > 0 && WORD_BOUNDARY_REG.test(elementList[i]?.value)) {
+
+    // 문자 종류 분류 함수
+    const getCharType = (val: string): number => {
+      if (!val || val === ZERO || val === ' ') return 0  // 경계(공백/ZERO)
+      if (/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(val)) return 1       // 한글
+      if (/[A-Za-z]/.test(val)) return 2                 // 영문
+      if (/[0-9]/.test(val)) return 3                    // 숫자
+      return 4                                            // 특수문자
+    }
+
+    let i = moveStartIndex
+    // 공백/ZERO는 먼저 건너뜀
+    while (i > 0 && getCharType(elementList[i]?.value) === 0) {
       moveCount++
       i--
     }
-    // 단어 끝까지 이동
-    while (i > 0 && !WORD_BOUNDARY_REG.test(elementList[i]?.value)) {
-      moveCount++
-      i--
+    // 현재 문자 종류 확인
+    const baseType = getCharType(elementList[i]?.value)
+    if (baseType !== 0) {
+      // 같은 종류의 문자를 경계까지 이동
+      while (i > 0 && getCharType(elementList[i - 1]?.value) === baseType) {
+        moveCount++
+        i--
+      }
     }
   }
   const curIndex = startIndex - moveCount
