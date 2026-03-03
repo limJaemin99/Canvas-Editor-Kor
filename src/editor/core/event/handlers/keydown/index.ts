@@ -44,7 +44,6 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     // Ctrl+End: 문서 최하단으로 이동
     const zoneManager = draw.getZone()
     if (zoneManager.isMainActive()) {
-      const elementList = draw.getOriginalElementList()
       const positionList = draw.getPosition().getPositionList()
       const lastIdx = positionList.length - 1
       const rangeManager = draw.getRange()

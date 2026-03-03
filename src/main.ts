@@ -2013,7 +2013,8 @@ window.onload = function () {
     } else {
       titleSelectDom.innerText = '본문'
       titleSelectDom.style.fontSize = ''
-      titleOptionDom.querySelector<HTMLLIElement>('li:not([data-level])')!.classList.add('active')
+      const noLevelLi = titleOptionDom.querySelector<HTMLLIElement>('li:not([data-level])')
+      if (noLevelLi) noLevelLi.classList.add('active')
     }
 
     // 列表
