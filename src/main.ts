@@ -1467,51 +1467,15 @@ window.onload = function () {
     instance.command.executePrint()
   }
 
-  const exportJsonDom = document.querySelector<HTMLDivElement>('.menu-item__export-json')!
-  exportJsonDom.onclick = function () {
-    console.log('export-json')
-    const editorResult = instance.command.getValue()
-
-    // JSON 데이터 생성 (JSP에서 전달받은 seq_ew, version 포함)
-    const jsonData: Record<string, unknown> = {
-      header: editorResult.data.header || [],
-      main: editorResult.data.main || [],
-      footer: editorResult.data.footer || [],
-      options: editorResult.options,
-      timestamp: new Date().toISOString()
-    }
-
-    // JSP에서 postMessage로 전달받은 식별자 값 포함 (없으면 전송 차단)
-    if (_editorSeqEw == null || _editorVersion == null) {
-      console.warn('[canvas-editor] seq_ew 또는 version 값이 없습니다. JSP에서 EDITOR_LOAD_DATA payload에 seq_ew, version을 포함해주세요.')
-      alert('문서 식별 정보(seq_ew, version)가 없어 저장할 수 없습니다.\n관리자에게 문의하세요.')
-      return
-    }
-    jsonData.seq_ew = _editorSeqEw
-    jsonData.version = _editorVersion
-
-    // AJAX로 서버에 전송
-    fetch('/lmxmng/webEditor/saveDoc.do', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8'
-      },
-      body: JSON.stringify(jsonData)
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('서버 응답 오류: ' + response.status)
+  // 에디터 툴바 저장 버튼은 제거되었으므로 export-json DOM이 없을 수 있음 (안전하게 처리)
+  const exportJsonDom = document.querySelector<HTMLDivElement>('.menu-item__export-json')
+  if (exportJsonDom) {
+    exportJsonDom.onclick = function () {
+      // 부모창(JSP)으로 저장 데이터 요청 위임
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'EDITOR_SAVE_READY', payload: null }, '*')
       }
-      return response.json()
-    })
-    .then(data => {
-      console.log('저장 성공:', data)
-      alert('문서가 성공적으로 저장되었습니다.')
-    })
-    .catch(error => {
-      console.error('저장 오류:', error)
-      alert('문서 저장 중 오류가 발생했습니다: ' + error.message)
-    })
+    }
   }
 
   // 예시 버튼 클릭 이벤트
@@ -2409,6 +2373,24 @@ window.onload = function () {
       const target = evt.source as Window
       target.postMessage(
         { type: 'EDITOR_DATA', payload: value },
+        evt.origin || '*'
+      )
+    }
+
+    if (type === 'TEMP_SAVE_REQUEST') {
+      // JSP 임시저장 버튼 클릭 시: 에디터 데이터를 부모창으로 반환
+      const value = instance.command.getValue()
+      const editorData = {
+        header: value.data.header || [],
+        main: value.data.main || [],
+        footer: value.data.footer || [],
+        options: value.options,
+        seq_ew: _editorSeqEw,
+        version: _editorVersion
+      }
+      const target = evt.source as Window
+      target.postMessage(
+        { type: 'TEMP_SAVE_DATA', payload: editorData },
         evt.origin || '*'
       )
     }
