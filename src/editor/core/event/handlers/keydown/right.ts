@@ -35,26 +35,27 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
     })
     return
   }
-  // 单词整体移动
+  // 단어 단위 이동 (Ctrl+→): 한국어 포함 공백·줄바꿈 경계 기준
   let moveCount = 1
   if (isMod(evt)) {
-    const LETTER_REG = draw.getLetterReg()
-    // 起始位置
+    const WORD_BOUNDARY_REG = /[\s\n\r]/
     const moveStartIndex =
       evt.shiftKey && !isCollapsed && startIndex === cursorPosition?.index
         ? endIndex
         : startIndex
-    if (LETTER_REG.test(elementList[moveStartIndex + 1]?.value)) {
-      let i = moveStartIndex + 2
-      while (i < elementList.length) {
-        const element = elementList[i]
-        if (!LETTER_REG.test(element.value)) {
-          break
-        }
-        moveCount++
-        i++
-      }
+    let i = moveStartIndex + 1
+    // 현재 위치가 공백이면 공백부터 건너뜀
+    while (i < elementList.length && WORD_BOUNDARY_REG.test(elementList[i]?.value)) {
+      moveCount++
+      i++
     }
+    // 단어 끝까지 이동
+    while (i < elementList.length && !WORD_BOUNDARY_REG.test(elementList[i]?.value)) {
+      moveCount++
+      i++
+    }
+    // 마지막에 실제 이동 거리에서 1을 빼서 기준 맞춤
+    moveCount = Math.max(1, moveCount - 1)
   }
   const curIndex = endIndex + moveCount
   // shift则缩放选区

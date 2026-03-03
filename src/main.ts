@@ -1500,11 +1500,7 @@ window.onload = function () {
       if (confirmed) {
         instance.command.executeSetValue({
           header: [],
-          main: [
-            {
-              value: '\n'
-            }
-          ],
+          main: [],
           footer: []
         })
         alert('문서가 초기화되었습니다.')
@@ -2366,7 +2362,7 @@ window.onload = function () {
 
       instance.command.executeSetValue({
         header: header as IElement[],
-        main: (main as IElement[]).length ? (main as IElement[]) : [{ value: '\n' }],
+        main: main as IElement[],
         footer: footer as IElement[]
       })
 

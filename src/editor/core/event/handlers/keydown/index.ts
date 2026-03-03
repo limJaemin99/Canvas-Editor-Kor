@@ -30,29 +30,36 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     // Ctrl+Home: 문서 최상단으로 이동
     const zoneManager = draw.getZone()
     if (zoneManager.isMainActive()) {
-      const positionList = draw.getPosition().getPositionList()
       const rangeManager = draw.getRange()
       rangeManager.setRange(0, 0)
-      draw.getPosition().setCursorPosition(positionList[0] || null)
-      draw.getCursor().drawCursor({ isShow: true })
+      draw.render({
+        curIndex: 0,
+        isSetCursor: true,
+        isSubmitHistory: false,
+        isCompute: false
+      })
       // 스크롤 최상단으로
       const pageContainer = draw.getPageContainer()
-      pageContainer.scrollTop = 0
+      if (pageContainer) pageContainer.scrollTop = 0
     }
     evt.preventDefault()
   } else if (isMod(evt) && evt.key === KeyMap.END) {
     // Ctrl+End: 문서 최하단으로 이동
     const zoneManager = draw.getZone()
     if (zoneManager.isMainActive()) {
-      const positionList = draw.getPosition().getPositionList()
-      const lastIdx = positionList.length - 1
+      const elementList = draw.getElementList()
+      const lastIdx = elementList.length - 1
       const rangeManager = draw.getRange()
       rangeManager.setRange(lastIdx, lastIdx)
-      draw.getPosition().setCursorPosition(positionList[lastIdx] || null)
-      draw.getCursor().drawCursor({ isShow: true })
+      draw.render({
+        curIndex: lastIdx,
+        isSetCursor: true,
+        isSubmitHistory: false,
+        isCompute: false
+      })
       // 스크롤 최하단으로
       const pageContainer = draw.getPageContainer()
-      pageContainer.scrollTop = pageContainer.scrollHeight
+      if (pageContainer) pageContainer.scrollTop = pageContainer.scrollHeight
     }
     evt.preventDefault()
   } else if (isMod(evt) && evt.key.toLocaleLowerCase() === KeyMap.Z) {
