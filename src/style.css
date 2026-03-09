@@ -944,7 +944,8 @@ ul {
   height: 16px;
   cursor: pointer;
   display: inline-block;
-  background: url(./assets/images/close.svg) no-repeat;
+  background: url(./assets/images/close.svg) no-repeat center center;
+  background-size: contain;
   transition: all .2s;
 }
 
@@ -987,6 +988,57 @@ ul {
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
+}
+
+/* ── 수동 목차 항목 (indexMap) ── */
+.catalog-item--manual {
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+/* 텍스트 content 영역: 남은 공간 모두 차지, 말줄임은 텍스트 끝에만 */
+.catalog__main .catalog-item--manual .catalog-item__content {
+  flex: 1;
+  min-width: 0;
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.catalog-item--manual .catalog-item__content > span {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* 삭제(×) 버튼 - itemDom의 직접 자식(flex 형제), 항상 우측 끝 고정, …에 가려지지 않음 */
+.catalog-item--manual > .catalog-item__delete {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 12px;
+  line-height: 1;
+  color: #bbb;
+  cursor: pointer;
+  border-radius: 2px;
+  user-select: none;
+}
+.catalog-item--manual > .catalog-item__delete:hover {
+  color: #e04040;
+  background: rgba(224, 64, 64, 0.1);
+}
+/* 드래그 중 */
+.catalog-item--dragging {
+  opacity: 0.4;
+}
+/* 드롭 대상 위에 있을 때 */
+.catalog-item--dragover {
+  border-top: 2px solid #4991f2;
 }
 
 .editor>div {

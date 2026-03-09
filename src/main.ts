@@ -1593,41 +1593,101 @@ window.onload = function () {
     catalogMainDom.innerHTML = ''
     if (!items || items.length === 0) return
 
+    // ── 드래그 앤 드롭 상태 변수 ──
+    let dragSrcIndex = -1
+
     for (let i = 0; i < items.length; i++) {
       const itemDom = document.createElement('div')
-      itemDom.classList.add('catalog-item')
+      itemDom.classList.add('catalog-item', 'catalog-item--manual')
+      itemDom.draggable = true
+      itemDom.dataset.index = String(i)
+
       const contentDom = document.createElement('div')
       contentDom.classList.add('catalog-item__content')
+
+      // ── 텍스트 span ──
       const spanDom = document.createElement('span')
       spanDom.innerText = items[i]
 
-      // 클릭 시 해당 텍스트 위치로 커서 이동
-      contentDom.onclick = (() => {
+      // ── 수정 1: 클릭 시 해당 텍스트 위치로 스크롤 + 커서 이동 ──
+      spanDom.onclick = (() => {
         const keyword = items[i]
         return () => {
-          // 1. 키워드로 검색하여 일치 범위 목록 가져오기
-          const rangeList = instance.command.getKeywordRangeList(keyword)
-          if (!rangeList || rangeList.length === 0) {
-            console.warn('[canvas-editor] 목차 키워드를 에디터에서 찾을 수 없습니다:', keyword)
-            return
-          }
-          // 2. 첫 번째 검색 결과의 startIndex로 커서 이동
-          //    executeSearch + executeSearchNavigateNext 조합으로 스크롤까지 처리
+          // executeSearch + executeSearchNavigateNext 로 스크롤 이동
           instance.command.executeSearch(keyword, {
             isRegEnable: false,
             isIgnoreCase: false,
             isLimitSelection: false
           })
           instance.command.executeSearchNavigateNext()
-          // 3. 이동 후 검색 하이라이트 초기화
+          // 검색 하이라이트 제거 후 커서를 해당 키워드 끝 위치에 놓기
           setTimeout(() => {
             instance.command.executeSearch(null)
+            // getKeywordRangeList로 첫 번째 매칭의 endIndex로 커서 이동
+            const rangeList = instance.command.getKeywordRangeList(keyword)
+            if (rangeList && rangeList.length > 0) {
+              const { endIndex } = rangeList[0]
+              instance.command.executeSetRange(endIndex, endIndex)
+            }
           }, 150)
         }
       })()
 
+      // ── 수정 3: 삭제(×) 버튼 ──
+      const deleteBtnDom = document.createElement('span')
+      deleteBtnDom.classList.add('catalog-item__delete')
+      deleteBtnDom.innerHTML = '&times;'
+      deleteBtnDom.title = '목차에서 삭제'
+      deleteBtnDom.onclick = (e) => {
+        e.stopPropagation()
+        if (!confirm('해당 목차를 삭제하시겠습니까?')) return
+        _indexMap.splice(Number(itemDom.dataset.index), 1)
+        renderManualCatalog(_indexMap)
+      }
+
       contentDom.append(spanDom)
-      itemDom.append(contentDom)
+      itemDom.append(contentDom, deleteBtnDom)
+
+      // ── 수정 4: 드래그 앤 드롭 ──
+      itemDom.addEventListener('dragstart', (e) => {
+        dragSrcIndex = Number(itemDom.dataset.index)
+        itemDom.classList.add('catalog-item--dragging')
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move'
+          e.dataTransfer.setData('text/plain', String(dragSrcIndex))
+        }
+      })
+      itemDom.addEventListener('dragend', () => {
+        itemDom.classList.remove('catalog-item--dragging')
+        catalogMainDom.querySelectorAll('.catalog-item--manual').forEach(el => {
+          el.classList.remove('catalog-item--dragover')
+        })
+      })
+      itemDom.addEventListener('dragover', (e) => {
+        e.preventDefault()
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
+        const targetIndex = Number(itemDom.dataset.index)
+        if (targetIndex !== dragSrcIndex) {
+          catalogMainDom.querySelectorAll('.catalog-item--manual').forEach(el => {
+            el.classList.remove('catalog-item--dragover')
+          })
+          itemDom.classList.add('catalog-item--dragover')
+        }
+      })
+      itemDom.addEventListener('dragleave', () => {
+        itemDom.classList.remove('catalog-item--dragover')
+      })
+      itemDom.addEventListener('drop', (e) => {
+        e.preventDefault()
+        itemDom.classList.remove('catalog-item--dragover')
+        const targetIndex = Number(itemDom.dataset.index)
+        if (dragSrcIndex === -1 || dragSrcIndex === targetIndex) return
+        // 배열 순서 변경
+        const moved = _indexMap.splice(dragSrcIndex, 1)[0]
+        _indexMap.splice(targetIndex, 0, moved)
+        renderManualCatalog(_indexMap)
+      })
+
       catalogMainDom.append(itemDom)
     }
     console.log('[canvas-editor] renderManualCatalog 완료 - 항목 수:', items.length)
@@ -1637,7 +1697,11 @@ window.onload = function () {
     isCatalogShow = !isCatalogShow
     if (isCatalogShow) {
       catalogDom.style.display = 'block'
-      updateCatalog()
+      if (_indexMap.length > 0) {
+        renderManualCatalog(_indexMap)
+      } else {
+        updateCatalog()
+      }
     } else {
       catalogDom.style.display = 'none'
     }
@@ -2148,7 +2212,9 @@ window.onload = function () {
         if (_indexMap.length > 0) {
           renderManualCatalog(_indexMap)
         } else {
+          /* 260309 제목 전환 목차 등록 기능 임시 주석
           updateCatalog()
+          */
         }
       })
     }
@@ -2473,7 +2539,8 @@ window.onload = function () {
         footer: value.data.footer || [],
         options: value.options,
         seq_ew: _editorSeqEw,
-        version: _editorVersion
+        version: _editorVersion,
+        indexMap: _indexMap   // 현재 목차 상태 (삭제/순서변경 반영)
       }
       const target = evt.source as Window
       target.postMessage(
