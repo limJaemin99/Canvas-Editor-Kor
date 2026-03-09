@@ -1570,6 +1570,12 @@ window.onload = function () {
       appendCatalog(catalogMainDom, catalog)
     }
   }
+
+  /**
+   * DB에 수동으로 입력된 indexMap 배열을 목차 영역에 렌더링합니다.
+   * 에디터 내 실제 제목 요소와는 독립적으로 텍스트만 표시합니다.
+   * @param items - 목차 항목 문자열 배열 (예: ['제1조(목적)', '제2조(환경)'])
+   */
   let isCatalogShow = true
   const catalogDom = document.querySelector<HTMLElement>('.catalog')!
   const catalogModeDom =
@@ -1577,6 +1583,56 @@ window.onload = function () {
   const catalogHeaderCloseDom = document.querySelector<HTMLDivElement>(
     '.catalog__header__close'
   )!
+
+  function renderManualCatalog(items: string[]) {
+    // catalog 패널이 숨겨져 있을 수 있으므로 강제로 표시
+    catalogDom.style.display = 'block'
+    isCatalogShow = true
+
+    const catalogMainDom = document.querySelector<HTMLDivElement>('.catalog__main')!
+    catalogMainDom.innerHTML = ''
+    if (!items || items.length === 0) return
+
+    for (let i = 0; i < items.length; i++) {
+      const itemDom = document.createElement('div')
+      itemDom.classList.add('catalog-item')
+      const contentDom = document.createElement('div')
+      contentDom.classList.add('catalog-item__content')
+      const spanDom = document.createElement('span')
+      spanDom.innerText = items[i]
+
+      // 클릭 시 해당 텍스트 위치로 커서 이동
+      contentDom.onclick = (() => {
+        const keyword = items[i]
+        return () => {
+          // 1. 키워드로 검색하여 일치 범위 목록 가져오기
+          const rangeList = instance.command.getKeywordRangeList(keyword)
+          if (!rangeList || rangeList.length === 0) {
+            console.warn('[canvas-editor] 목차 키워드를 에디터에서 찾을 수 없습니다:', keyword)
+            return
+          }
+          // 2. 첫 번째 검색 결과의 startIndex로 커서 이동
+          //    executeSearch + executeSearchNavigateNext 조합으로 스크롤까지 처리
+          instance.command.executeSearch(keyword, {
+            isRegEnable: false,
+            isIgnoreCase: false,
+            isLimitSelection: false
+          })
+          instance.command.executeSearchNavigateNext()
+          // 3. 이동 후 검색 하이라이트 초기화
+          setTimeout(() => {
+            instance.command.executeSearch(null)
+          }, 150)
+        }
+      })()
+
+      contentDom.append(spanDom)
+      itemDom.append(contentDom)
+      catalogMainDom.append(itemDom)
+    }
+    console.log('[canvas-editor] renderManualCatalog 완료 - 항목 수:', items.length)
+  }
+
   const switchCatalog = () => {
     isCatalogShow = !isCatalogShow
     if (isCatalogShow) {
@@ -2086,10 +2142,14 @@ window.onload = function () {
     document.querySelector<HTMLSpanElement>('.word-count')!.innerText = `${
       wordCount || 0
     }`
-    // 목차
+    // 목차: indexMap(수동 목차)이 있으면 유지, 없으면 에디터 제목 기반 목차 갱신
     if (isCatalogShow) {
       nextTick(() => {
-        updateCatalog()
+        if (_indexMap.length > 0) {
+          renderManualCatalog(_indexMap)
+        } else {
+          updateCatalog()
+        }
       })
     }
     // 주석
@@ -2317,6 +2377,8 @@ window.onload = function () {
   // JSP에서 전달받은 식별자 값 (저장 시 서버로 함께 전송)
   let _editorSeqEw: number | null = null
   let _editorVersion: number | null = null
+  // DB에서 수동으로 입력된 목차 배열 (에디터 수정 시에도 유지하기 위해 스코프 상위에 선언)
+  let _indexMap: string[] = []
 
   // 부모 창(JSP)에서 데이터를 받아 에디터에 로드
   window.addEventListener('message', (evt) => {
@@ -2358,7 +2420,21 @@ window.onload = function () {
       if (rawPayload?.version != null) {
         _editorVersion = Number(rawPayload.version)
       }
-      console.log('[canvas-editor] EDITOR_LOAD_DATA 수신 - header:', header.length, 'main:', main.length, 'footer:', footer.length, '| seq_ew:', _editorSeqEw, 'version:', _editorVersion)
+
+      // indexMap: DB에서 수동으로 입력된 목차 배열 (문자열 또는 배열 형태 모두 처리)
+      _indexMap = []
+      try {
+        const rawIndexMap = rawPayload?.indexMap
+        if (typeof rawIndexMap === 'string' && rawIndexMap.trim()) {
+          _indexMap = JSON.parse(rawIndexMap)
+        } else if (Array.isArray(rawIndexMap)) {
+          _indexMap = rawIndexMap.map(String)
+        }
+      } catch (e) {
+        console.warn('[canvas-editor] indexMap 파싱 실패:', e)
+      }
+
+      console.log('[canvas-editor] EDITOR_LOAD_DATA 수신 - header:', header.length, 'main:', main.length, 'footer:', footer.length, '| seq_ew:', _editorSeqEw, 'version:', _editorVersion, '| indexMap:', _indexMap)
 
       instance.command.executeSetValue({
         header: header as IElement[],
@@ -2366,10 +2442,16 @@ window.onload = function () {
         footer: footer as IElement[]
       })
 
-      // 렌더링 완료 후 목차 강제 갱신 (positionList 계산 완료 대기)
-      if (isCatalogShow) {
-        setTimeout(() => { updateCatalog() }, 300)
-      }
+      // 렌더링 완료 후 목차 갱신
+      setTimeout(() => {
+        if (_indexMap.length > 0) {
+          // DB에 수동 목차가 있으면 항상 표시 (catalog 패널 강제 오픈 포함)
+          renderManualCatalog(_indexMap)
+        } else if (isCatalogShow) {
+          // 수동 목차가 없으면 에디터 내 제목 요소 기반 목차 갱신
+          updateCatalog()
+        }
+      }, 300)
     }
 
     if (type === 'GET_EDITOR_DATA') {
