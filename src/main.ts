@@ -1859,6 +1859,7 @@ window.onload = function () {
   }
 
   // 7. 편집기 사용 모드
+  let _isFixedReadonlyView = false
   let modeIndex = 0
   const modeList = [
     {
@@ -1892,6 +1893,7 @@ window.onload = function () {
   ]
   const modeElement = document.querySelector<HTMLDivElement>('.editor-mode')!
   modeElement.onclick = function () {
+    if (_isFixedReadonlyView) return
     // 모드 선택 순환
     modeIndex === modeList.length - 1 ? (modeIndex = 0) : modeIndex++
     // 모드 설정
@@ -2446,6 +2448,55 @@ window.onload = function () {
   // DB에서 수동으로 입력된 목차 배열 (에디터 수정 시에도 유지하기 위해 스코프 상위에 선언)
   let _indexMap: string[] = []
 
+  function applyViewConfig(rawViewConfig: unknown) {
+    if (!rawViewConfig || typeof rawViewConfig !== 'object') return
+    const viewConfig = rawViewConfig as {
+      forceReadonly?: boolean
+      disableModeToggle?: boolean
+      lockHeaderFooter?: boolean
+      disableZoneHover?: boolean
+    }
+
+    const shouldLockHeaderFooter = !!viewConfig.lockHeaderFooter
+    const shouldDisableZoneHover = !!viewConfig.disableZoneHover
+    if (shouldLockHeaderFooter || shouldDisableZoneHover) {
+      const currentOptions = instance.command.getOptions()
+      instance.command.executeUpdateOptions({
+        header: {
+          ...currentOptions.header,
+          editable: shouldLockHeaderFooter
+            ? false
+            : currentOptions.header.editable
+        },
+        footer: {
+          ...currentOptions.footer,
+          editable: shouldLockHeaderFooter
+            ? false
+            : currentOptions.footer.editable
+        },
+        zone: {
+          ...currentOptions.zone,
+          tipDisabled: shouldDisableZoneHover
+            ? true
+            : currentOptions.zone.tipDisabled
+        }
+      })
+    }
+
+    if (viewConfig.forceReadonly) {
+      _isFixedReadonlyView = true
+      instance.command.executeMode(EditorMode.READONLY)
+      modeElement.innerText = '읽기전용 모드'
+    }
+
+    if (viewConfig.disableModeToggle) {
+      modeElement.classList.add('disable')
+      modeElement.style.pointerEvents = 'none'
+      modeElement.style.opacity = '0.5'
+      modeElement.style.cursor = 'not-allowed'
+    }
+  }
+
   // 부모 창(JSP)에서 데이터를 받아 에디터에 로드
   window.addEventListener('message', (evt) => {
     // 메시지 데이터 파싱: 문자열이면 JSON.parse, 객체면 그대로 사용
@@ -2507,6 +2558,8 @@ window.onload = function () {
         main: main as IElement[],
         footer: footer as IElement[]
       })
+
+      applyViewConfig(rawPayload?.viewConfig)
 
       // 렌더링 완료 후 목차 갱신
       setTimeout(() => {
